@@ -1,7 +1,7 @@
 {
-  "name": "homebridge-warmup4ie",
-  "version": "0.0.6",
-  "description": "Warmup4IE Thermostat Plugin Homebridge",
+  "name": "homebridge-connex",
+  "version": "0.0.7",
+  "description": "connex Thermostat Plugin Homebridge",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -9,10 +9,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NorthernMan54/homebridge-warmup4ie.git"
+    "url": "git+https://github.com/NorthernMan54/homebridge-connex.git"
   },
   "keywords": [
-    "warmup4ie",
+    "connex",
     "homebridge-plugin"
   ],
   "engines": {
@@ -31,7 +31,7 @@
   "author": "NorthernMan54",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/NorthernMan54/homebridge-warmup4ie/issues"
+    "url": "https://github.com/NorthernMan54/homebridge-connex/issues"
   },
-  "homepage": "https://github.com/NorthernMan54/homebridge-warmup4ie#readme"
+  "homepage": "https://github.com/NorthernMan54/homebridge-connex#readme"
 }
