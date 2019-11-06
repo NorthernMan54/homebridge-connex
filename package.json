@@ -1,0 +1,37 @@
+{
+  "name": "homebridge-warmup4ie",
+  "version": "0.0.5",
+  "description": "Warmup4IE Thermostat Plugin Homebridge",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "document": "./gh-md-toc --insert README.md"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NorthernMan54/homebridge-warmup4ie.git"
+  },
+  "keywords": [
+    "warmup4ie",
+    "homebridge-plugin"
+  ],
+  "engines": {
+    "node": ">=4.4.5",
+    "homebridge": ">=0.4.16"
+  },
+  "devDependencies": {
+    "documentation": "11.0.0"
+  },
+  "dependencies": {
+    "debug": ">2.6.9",
+    "fakegato-history": "^0.5.5",
+    "moment": "^2.20.1",
+    "request": "^2.34.0"
+  },
+  "author": "NorthernMan54",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/NorthernMan54/homebridge-warmup4ie/issues"
+  },
+  "homepage": "https://github.com/NorthernMan54/homebridge-warmup4ie#readme"
+}
