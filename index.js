@@ -53,7 +53,7 @@ connexPlatform.prototype = {
         // debug("myAccessories", myAccessories);
         callback(myAccessories);
       }
-      // pollDevices.call(this);
+      pollDevices.call(this);
     }.bind(this));
 
     setInterval(pollDevices.bind(this), this.refresh * 1000); // Poll every minute
