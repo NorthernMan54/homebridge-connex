@@ -20,6 +20,18 @@ Plugin works with program mode only, and changes to the temperature are treated 
 
 <!--te-->
 
+# Roadmap
+
+## To do
+
+1 - Repair connections after failure
+2 - Fix long running sessions
+3 - Queue requests to dimplex connex
+
+## Done
+
+
+
 # Using the plugin
 
 Thermostats are retrieved from the my.warmup.com site, and are automatically created in the Home App.
