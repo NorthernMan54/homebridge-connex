@@ -5,7 +5,7 @@ var debug = require('debug')('connex');
 var Service, Characteristic, FakeGatoHistoryService, CustomCharacteristic;
 var os = require("os");
 var hostname = os.hostname();
-var connex = require('./lib/connex.js').connex;
+var Connex = require('./lib/connex.js').connex;
 const moment = require('moment');
 
 var myAccessories = [];
@@ -40,7 +40,7 @@ connexPlatform.prototype = {
   accessories: function(callback) {
     this.log("Logging into connex...");
     // debug("zones", this);
-    thermostats = new connex(this, function(err, device) {
+    thermostats = new Connex(this, function(err, device) {
       if (!err) {
         this.log("Found %s zone(s)", device.zones);
 
@@ -62,19 +62,21 @@ connexPlatform.prototype = {
 
 function pollDevices() {
   debug("pollDevices", thermostats);
-  thermostats.zone.forEach(function(zone) {
-    debug("zone", zone);
+  debug("pollDevices", thermostats.getDevices());
+  for (var zone in thermostats.getDevices().zones) {
+  // thermostats.getDevices().zones.forEach(function(zone) {
+    debug("forZone", zone);
     if (zone) {
       updateStatus(zone);
     }
-  });
+  }
 }
 
 function getAccessory(accessories, zoneId) {
   var value;
   accessories.forEach(function(accessory) {
-    // debug("zone", accessory.zone.zoneId, zoneId);
-    if (accessory.zone.zoneId === zoneId) {
+    debug("getAccessory zone", accessory.zone, zoneId);
+    if (accessory.zone.zone === zoneId) {
       value = accessory;
     }
   });
@@ -82,8 +84,8 @@ function getAccessory(accessories, zoneId) {
 }
 
 function updateStatus(zone) {
-  debug("updateStatus %s", zone.zoneId);
-  var acc = getAccessory(myAccessories, zone.zoneId);
+  debug("updateStatus %s", zone);
+  var acc = getAccessory(myAccessories, zone);
   // debug("acc", acc);
   var service = acc.thermostatService;
 
@@ -149,7 +151,7 @@ function updateStatus(zone) {
 
 function ConnexAccessory(that, name, zone) {
   this.log = that.log;
-  this.log("Adding connex Device", name);
+  this.log("Adding connex Device", name, zone);
   this.name = name;
   this.zone = zone;
   this.log_event_counter = 0;
