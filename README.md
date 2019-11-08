@@ -30,7 +30,7 @@ Plugin works with program mode only, and changes to the temperature are treated 
 
 ## Done
 
-
+1 - Reverse engineer the interface
 
 # Using the plugin
 
