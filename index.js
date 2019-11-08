@@ -27,22 +27,33 @@ function connexPlatform(log, config, api) {
   this.duration = config['duration'] || 60; // duration in minutes
   this.log = log;
   storage = config['storage'] || "fs";
+
+  /*
+    if (api) {
+      this.api = api;
+      this.api.on('didFinishLaunching', this.didFinishLaunching.bind(this));
+    }
+    */
 }
 
 connexPlatform.prototype = {
   accessories: function(callback) {
     this.log("Logging into connex...");
     // debug("zones", this);
-    thermostats = new connex(this, function(err, zones) {
+    thermostats = new connex(this, function(err, device) {
       if (!err) {
-        this.log("Found %s zone(s)", zones.length);
-        zones.forEach(function(zone) {
-          this.log("Adding", zone.zoneName);
-          var newAccessory = new connexAccessory(this, zone.zoneName, thermostats.zone[zone.zoneId]);
-          // myAccessories[zone.zoneId] = newAccessory;
-          myAccessories.push(newAccessory);
-          // debug("myAccessories", myAccessories);
-        }.bind(this));
+        this.log("Found %s zone(s)", device.zones);
+
+        for (var zone in device.zones) {
+          // this.log("Adding", zone);
+          if (zone === "Z1") {
+            var newAccessory = new connexAccessory(this, device.zones[zone].name, device.zones[zone]);
+            // myAccessories[zone.zoneId] = newAccessory;
+            myAccessories.push(newAccessory);
+          }
+
+        };
+        debug("myAccessories", myAccessories);
         callback(myAccessories);
       }
       // pollDevices.call(this);
@@ -74,7 +85,7 @@ function getAccessory(accessories, zoneId) {
 }
 
 function updateStatus(zone) {
-  // debug("updateStatus %s", zone.zoneId);
+  debug("updateStatus %s", zone.zoneId);
   var acc = getAccessory(myAccessories, zone.zoneId);
   // debug("acc", acc);
   var service = acc.thermostatService;
@@ -135,9 +146,6 @@ function updateStatus(zone) {
     acc.log_event_counter = 0;
   }
 
-  service = acc.temperatureService;
-  service.getCharacteristic(Characteristic.CurrentTemperature)
-    .updateValue(Number(zone.airTemp / 10));
 }
 
 // give this function all the parameters needed
@@ -146,11 +154,8 @@ function connexAccessory(that, name, zone) {
   this.log = that.log;
   this.log("Adding connex Device", name);
   this.name = name;
-  this.username = that.username;
-  this.password = that.password;
   this.zone = zone;
   this.log_event_counter = 0;
-  this.zoneId = zone.zoneId;
 }
 
 connexAccessory.prototype = {
@@ -179,92 +184,6 @@ connexAccessory.prototype = {
     thermostats.setTargetTemperature(this.zoneId, value, callback);
   },
 
-  /*
-  setCoolingThresholdTemperature: function(value, callback) {
-    var that = this;
-    if (!updating) {
-      updating = true;
-
-      //    maxValue: 38,
-      //    minValue: 10,
-
-      that.log("Setting cooling threshold temperature for", this.name, "to", value + "°");
-
-      if (value < 10)
-        value = 10;
-
-      if (value > 38)
-        value = 38;
-
-      value = connex.toconnexTemperature(that, value);
-      // TODO:
-      // verify that the task did succeed
-
-      connex.login(this.username, this.password).then(function(session) {
-        session.setHeatCoolSetpoint(that.deviceID, null, value, that.usePermanentHolds).then(function(taskId) {
-          that.log("Successfully changed cooling threshold!");
-          that.log(taskId);
-          // returns taskId if successful
-          // nothing else here...
-          updateValues(that);
-          callback(null, Number(1));
-        });
-      }).fail(function(err) {
-        that.log('connex Failed:', err);
-        callback(null, Number(0));
-      });
-      callback(null, Number(0));
-      updating = false;
-    }
-  },
-
-  setHeatingThresholdTemperature: function(value, callback) {
-    var that = this;
-    if (!updating) {
-      updating = true;
-
-      //    maxValue: 38,
-      //    minValue: 10,
-
-      that.log("Setting heating threshold temperature for", this.name, "to", value + "°");
-
-      if (value < 10)
-        value = 10;
-
-      if (value > 38)
-        value = 38;
-
-      value = connex.toconnexTemperature(that, value);
-      // TODO:
-      // verify that the task did succeed
-
-      connex.login(this.username, this.password).then(function(session) {
-        session.setHeatCoolSetpoint(that.deviceID, value, null).then(function(taskId) {
-          that.log("Successfully changed heating threshold!");
-          that.log(taskId);
-          // returns taskId if successful
-          // nothing else here...
-          updateValues(that);
-          callback(null, Number(1));
-        });
-      }).fail(function(err) {
-        that.log('connex Failed:', err);
-        callback(null, Number(0));
-      });
-      callback(null, Number(0));
-      updating = false;
-    }
-  },
-
-  setTemperatureDisplayUnits: function(value, callback) {
-    var that = this;
-
-    that.log("set temperature units to", value);
-    callback();
-  },
-
-  */
-
   getServices: function() {
     // var that = this;
     // this.log("getServices", this.name);
@@ -282,90 +201,95 @@ connexAccessory.prototype = {
 
     this.thermostatService = new Service.Thermostat(this.name);
     this.thermostatService.isPrimaryService = true;
+    /*
+        this.thermostatService
+          .getCharacteristic(Characteristic.TargetHeatingCoolingState)
+          .setProps({
+            validValues: [0, 1, 3]
+          });
+    *
+    //    this.thermostatService
+    //      .getCharacteristic(Characteristic.TargetHeatingCoolingState)
+    //      .on('set', this.setTargetHeatingCooling.bind(this));
 
-    this.thermostatService
-      .getCharacteristic(Characteristic.TargetHeatingCoolingState)
-      .setProps({
-        validValues: [0, 1, 3]
-      });
+        this.thermostatService
+          .getCharacteristic(Characteristic.TargetTemperature)
+          .on('set', this.setTargetTemperature.bind(this));
 
-    this.thermostatService
-      .getCharacteristic(Characteristic.TargetHeatingCoolingState)
-      .on('set', this.setTargetHeatingCooling.bind(this));
+        this.thermostatService
+          .getCharacteristic(Characteristic.TargetTemperature)
+          .setProps({
+            minValue: this.zone.minTemp / 10,
+            maxValue: this.zone.maxTemp / 10
+          });
 
-    this.thermostatService
-      .getCharacteristic(Characteristic.TargetTemperature)
-      .on('set', this.setTargetTemperature.bind(this));
+        this.thermostatService
+          .getCharacteristic(Characteristic.CurrentTemperature)
+          .setProps({
+            minValue: -100,
+            maxValue: 100
+          });
 
-    this.thermostatService
-      .getCharacteristic(Characteristic.TargetTemperature)
-      .setProps({
-        minValue: this.zone.minTemp / 10,
-        maxValue: this.zone.maxTemp / 10
-      });
+    /*
+        this.thermostatService.log = this.log;
+        this.loggingService = new FakeGatoHistoryService("thermo", this.thermostatService, {
+          storage: storage,
+          minutes: this.refresh * 10 / 60
+        });
 
-    this.thermostatService
-      .getCharacteristic(Characteristic.CurrentTemperature)
-      .setProps({
-        minValue: -100,
-        maxValue: 100
-      });
-
-    this.thermostatService.log = this.log;
-    this.loggingService = new FakeGatoHistoryService("thermo", this.thermostatService, {
-      storage: storage,
-      minutes: this.refresh * 10 / 60
-    });
-
-    this.thermostatService.addCharacteristic(CustomCharacteristic.ValvePosition);
-    this.thermostatService.addCharacteristic(CustomCharacteristic.ProgramCommand);
-    this.thermostatService.addCharacteristic(CustomCharacteristic.ProgramData);
-
-    var targetTemperature = (this.zone.targetTemp > this.zone.minTemp ? this.zone.targetTemp : this.zone.minTemp);
+        this.thermostatService.addCharacteristic(CustomCharacteristic.ValvePosition);
+        this.thermostatService.addCharacteristic(CustomCharacteristic.ProgramCommand);
+        this.thermostatService.addCharacteristic(CustomCharacteristic.ProgramData);
+    */
     this.thermostatService.getCharacteristic(Characteristic.TargetTemperature)
-      .updateValue(Number(targetTemperature / 10));
+      .updateValue(Number(this.zone.Setpoint / 10));
 
+    debug("CurrTemp", this.zone.CurrTemp);
     this.thermostatService.getCharacteristic(Characteristic.CurrentTemperature)
-      .updateValue(Number(this.zone.currentTemp / 10));
-
-    var currentHeatingCoolingState;
-    switch (this.zone.runMode) {
-      case "off":
-        currentHeatingCoolingState = 0;
-        break;
-      default:
-      case "fixed": // Heat
-      case "override": // Heat
-      case "schedule":
-        if (this.zone.currentTemp < this.zone.targetTemp) {
-          currentHeatingCoolingState = 1;
-        } else {
-          currentHeatingCoolingState = 0;
+      .updateValue(Number(this.zone.CurrTemp / 10));
+    /*
+        var currentHeatingCoolingState;
+        switch (this.zone.runMode) {
+          case "off":
+            currentHeatingCoolingState = 0;
+            break;
+          default:
+          case "fixed": // Heat
+          case "override": // Heat
+          case "schedule":
+            if (this.zone.currentTemp < this.zone.targetTemp) {
+              currentHeatingCoolingState = 1;
+            } else {
+              currentHeatingCoolingState = 0;
+            }
+            break;
         }
-        break;
-    }
+    */
 
-    this.thermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState)
-      .updateValue(currentHeatingCoolingState);
+    //    this.thermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState)
+    //      .updateValue(currentHeatingCoolingState);
 
-    var targetHeatingCoolingState;
-    switch (this.zone.runMode) {
-      case "off":
-        targetHeatingCoolingState = 0;
-        break;
-      default:
-      case "fixed": // Heat
-      case "override": // Heat
-        targetHeatingCoolingState = 1;
-        break;
-      case "schedule":
-        targetHeatingCoolingState = 1;
-        break;
-    }
+    /*
+        var targetHeatingCoolingState;
+        switch (this.zone.runMode) {
+          case "off"
+            targetHeatingCoolingState = 0;
+            break;
+          default:
+          case "fixed": // Heat
+          case "override": // Heat
+            targetHeatingCoolingState = 1;
+            break;
+          case "schedule":
+            targetHeatingCoolingState = 1;
+            break;
+        }
+    */
 
-    this.thermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState)
-      .updateValue(targetHeatingCoolingState);
+    //    this.thermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState)
+    //      .updateValue(targetHeatingCoolingState);
 
-    return [informationService, this.thermostatService, this.temperatureService, this.loggingService];
+    debug("getServices", this.name, informationService, this.thermostatService);
+    return [informationService, this.thermostatService];
   }
 };
