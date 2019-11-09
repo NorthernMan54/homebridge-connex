@@ -24,6 +24,7 @@ function connexPlatform(log, config, api) {
   this.username = config['username'];
   this.password = config['password'];
   this.refresh = config['refresh'] || 60; // Update every minute
+  this.defaultTemp = config['defaultTemp'] || 18; // default to 18
   this.log = log;
   storage = config['storage'] || "fs";
 
@@ -60,15 +61,21 @@ connexPlatform.prototype = {
 };
 
 function pollDevices() {
-  // debug("pollDevices", thermostats);
-  debug("setInterval", thermostats.getDevices());
-  for (var zone in thermostats.getDevices().zones) {
-  // thermostats.getDevices().zones.forEach(function(zone) {
-    debug("forZone", zone);
-    if (zone) {
-      updateStatus(thermostats.getDevices().zones[zone]);
+  debug("pollDevices - thermo", thermostats);
+  thermostats.poll(function(err, devices) {
+    debug("pollDevices - devices", devices);
+    if (!err) {
+      for (var zone in devices.zones) {
+        // thermostats.getDevices().zones.forEach(function(zone) {
+        debug("forZone", zone);
+        if (zone) {
+          updateStatus(thermostats.getDevices().zones[zone]);
+        }
+      }
+    } else {
+      debug("ERROR: pollDevices", err);
     }
-  }
+  });
 }
 
 function getAccessory(accessories, zoneId) {
@@ -83,67 +90,33 @@ function getAccessory(accessories, zoneId) {
 }
 
 function updateStatus(zone) {
-  debug("updateStatus %s", zone);
+  debug("updateStatus %s", JSON.stringify(zone, null, 4));
   var acc = getAccessory(myAccessories, zone.zone);
   debug("updateStatus acc", acc.name);
   var service = acc.thermostatService;
 
-  var targetTemperature = (zone.targetTemp > zone.minTemp ? zone.targetTemp : zone.minTemp);
+  var targetTemperature = zone.Setpoint;
   service.getCharacteristic(Characteristic.TargetTemperature)
     .updateValue(Number(targetTemperature / 10));
 
   service.getCharacteristic(Characteristic.CurrentTemperature)
-    .updateValue(Number(zone.currentTemp / 10));
+    .updateValue(Number(zone.CurrTemp / 10));
 
-  var currentHeatingCoolingState;
-  switch (zone.runMode) {
-    case "off":
-      currentHeatingCoolingState = 0;
-      break;
-    default:
-    case "fixed": // Heat
-    case "override": // Heat
-    case "schedule":
-      if (zone.currentTemp < zone.targetTemp) {
-        currentHeatingCoolingState = 1;
-      } else {
-        currentHeatingCoolingState = 0;
-      }
-      break;
+  if (service.getCharacteristic(Characteristic.CurrentTemperature).value > service.getCharacteristic(Characteristic.TargetTemperature).value) {
+    service.getCharacteristic(Characteristic.CurrentHeatingCoolingState)
+      .updateValue(0);
+  } else {
+    service.getCharacteristic(Characteristic.CurrentHeatingCoolingState)
+      .updateValue(1);
   }
 
-  service.getCharacteristic(Characteristic.CurrentHeatingCoolingState)
-    .updateValue(currentHeatingCoolingState);
-
-  var targetHeatingCoolingState;
-  switch (zone.runMode) {
-    case "off":
-      targetHeatingCoolingState = 0;
-      break;
-    default:
-    case "fixed": // Heat
-    case "override": // Heat
-      targetHeatingCoolingState = 1;
-      break;
-    case "schedule":
-      targetHeatingCoolingState = 3;
-      break;
+  if (service.getCharacteristic(Characteristic.TargetTemperature).value === 0) {
+    service.getCharacteristic(Characteristic.TargetHeatingCoolingState)
+      .updateValue(0);
+  } else {
+    service.getCharacteristic(Characteristic.TargetHeatingCoolingState)
+      .updateValue(1);
   }
-
-  service.getCharacteristic(Characteristic.TargetHeatingCoolingState)
-    .updateValue(targetHeatingCoolingState);
-
-  acc.log_event_counter++;
-  if (!(acc.log_event_counter % 10)) {
-    acc.loggingService.addEntry({
-      time: moment().unix(),
-      currentTemp: service.getCharacteristic(Characteristic.CurrentTemperature).value,
-      setTemp: service.getCharacteristic(Characteristic.TargetTemperature).value,
-      valvePosition: service.getCharacteristic(Characteristic.TargetHeatingCoolingState).value
-    });
-    acc.log_event_counter = 0;
-  }
-
 }
 
 // give this function all the parameters needed
@@ -165,7 +138,7 @@ ConnexAccessory.prototype = {
         ConnexAccessory.prototype.setTargetTemperature.call(this, 0, callback);
         break;
       case 1: // Heat
-        ConnexAccessory.prototype.setTargetTemperature.call(this, 20, callback);
+        ConnexAccessory.prototype.setTargetTemperature.call(this, this.defaultTemp, callback);
         break;
     }
   },
