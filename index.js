@@ -24,7 +24,6 @@ function connexPlatform(log, config, api) {
   this.username = config['username'];
   this.password = config['password'];
   this.refresh = config['refresh'] || 60; // Update every minute
-  this.duration = config['duration'] || 60; // duration in minutes
   this.log = log;
   storage = config['storage'] || "fs";
 
@@ -61,13 +60,13 @@ connexPlatform.prototype = {
 };
 
 function pollDevices() {
-  debug("pollDevices", thermostats);
-  debug("pollDevices", thermostats.getDevices());
+  // debug("pollDevices", thermostats);
+  debug("setInterval", thermostats.getDevices());
   for (var zone in thermostats.getDevices().zones) {
   // thermostats.getDevices().zones.forEach(function(zone) {
     debug("forZone", zone);
     if (zone) {
-      updateStatus(zone);
+      updateStatus(thermostats.getDevices().zones[zone]);
     }
   }
 }
@@ -75,7 +74,7 @@ function pollDevices() {
 function getAccessory(accessories, zoneId) {
   var value;
   accessories.forEach(function(accessory) {
-    debug("getAccessory zone", accessory.zone, zoneId);
+    // debug("getAccessory zone", accessory.zone, zoneId);
     if (accessory.zone.zone === zoneId) {
       value = accessory;
     }
@@ -85,8 +84,8 @@ function getAccessory(accessories, zoneId) {
 
 function updateStatus(zone) {
   debug("updateStatus %s", zone);
-  var acc = getAccessory(myAccessories, zone);
-  // debug("acc", acc);
+  var acc = getAccessory(myAccessories, zone.zone);
+  debug("updateStatus acc", acc.name);
   var service = acc.thermostatService;
 
   var targetTemperature = (zone.targetTemp > zone.minTemp ? zone.targetTemp : zone.minTemp);
