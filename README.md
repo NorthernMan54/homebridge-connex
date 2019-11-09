@@ -30,6 +30,7 @@ Homebridge plugin for the [Dimplex Connex WiFi thermostat](https://www.dimplex.c
 2 - Add support for multiple controllers on a single account
 3 - Queue requests to dimplex connex
 4 - Have 'Auto' release hold on a zone, and resume schedule
+5 - Have temperature setting changes trigger a Poll
 
 ## Done
 
