@@ -139,7 +139,7 @@ ConnexAccessory.prototype = {
         ConnexAccessory.prototype.setTargetTemperature.call(this, 0, callback);
         break;
       case 1: // Heat
-        debug("setTargetTemperature", this);
+        debug("setTargetTemperature %s ==> ", this, myAccessories);
         ConnexAccessory.prototype.setTargetTemperature.call(this, this.defaultTemp, callback);
         break;
     }

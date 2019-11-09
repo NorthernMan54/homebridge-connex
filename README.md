@@ -1,4 +1,4 @@
-# homebridge-warmup4ie
+# homebridge-connex
 
 Homebridge plugin for the WarmUP 4iE thermostat.
 
@@ -7,7 +7,7 @@ Plugin works with program mode only, and changes to the temperature are treated 
 # Table of Contents
 
 <!--ts-->
-   * [homebridge-warmup4ie](#homebridge-warmup4ie)
+   * [homebridge-connex](#homebridge-connex)
    * [Table of Contents](#table-of-contents)
    * [Using the plugin](#using-the-plugin)
       * [Temperature Control](#temperature-control)
@@ -25,16 +25,21 @@ Plugin works with program mode only, and changes to the temperature are treated 
 ## To do
 
 1 - Repair connections after failure
-2 - Fix long running sessions
+2 - Add support for multiple controllers on a single account
 3 - Queue requests to dimplex connex
 
 ## Done
 
 1 - Reverse engineer the interface
+2 - Fix long running sessions
+
+# Known Issues
+
+1 - Does not support multiple dimplex connex wifi thermostats on a single account ( I don't have the ability to test ).  If you have  multiple dimplex connex wifi thermostats, and have the time to work with me to get it working, please let me know.
 
 # Using the plugin
 
-Thermostats are retrieved from the my.warmup.com site, and are automatically created in the Home App.
+Thermostats are retrieved from the dimplex connex site, and are automatically created in the Home App.
 
 ## Temperature Control
 
@@ -52,7 +57,7 @@ When the thermostat is in temperature override mode, the Mode setting is set to 
 
 ```
 "platforms": [{
-  "platform": "warmup4ie",
+  "platform": "connex",
   "name": "WarmUP",
   "username": "XXXXXXXXXXXX",
   "password": "XXXXXXXXXXXX"
