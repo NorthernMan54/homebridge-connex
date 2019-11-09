@@ -126,6 +126,7 @@ function ConnexAccessory(that, name, zone) {
   this.log("Adding connex Device", name, zone);
   this.name = name;
   this.zone = zone;
+  this.defaultTemp = that.defaultTemp;
   this.log_event_counter = 0;
 }
 
@@ -138,6 +139,7 @@ ConnexAccessory.prototype = {
         ConnexAccessory.prototype.setTargetTemperature.call(this, 0, callback);
         break;
       case 1: // Heat
+        debug("setTargetTemperature", this);
         ConnexAccessory.prototype.setTargetTemperature.call(this, this.defaultTemp, callback);
         break;
     }
