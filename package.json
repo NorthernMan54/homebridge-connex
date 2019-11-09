@@ -1,6 +1,6 @@
 {
   "name": "homebridge-connex",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "connex Thermostat Plugin Homebridge",
   "main": "index.js",
   "scripts": {
