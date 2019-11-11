@@ -26,16 +26,16 @@ Homebridge plugin for the [Dimplex Connex WiFi thermostat](https://www.dimplex.c
 
 ## To do
 
-1 - Repair connections after failure, currently need to restart
-2 - Add support for multiple controllers on a single account
-3 - Queue requests to dimplex connex
-4 - Have 'Auto' release hold on a zone, and resume schedule
-5 - Have temperature setting changes trigger a Poll
+1 - Add support for multiple controllers on a single account
+2 - Queue requests to dimplex connex
 
 ## Done
 
 1 - Reverse engineer the interface
 2 - Fix long running sessions
+3 - Repair connections after failure, currently need to restart
+4 - Have 'Auto' release hold on a zone, and resume schedule
+5 - Have temperature setting changes trigger a Poll
 
 # Using the plugin
 
@@ -43,12 +43,13 @@ Thermostats are retrieved from the dimplex connex site, and are automatically cr
 
 ## Temperature Control
 
-Changes to the temperature create a temperature override for the current setting.
+Setting a temperature in 'Heat' mode, set's the temperature with a permanent hold.  Setting a temperature in 'Auto', set's the temperature as an override until the next scheduled temperature change.
 
 ## Mode Setting
 
-`Off` - Turns the temperature setting of the zone to 0
-`Heat` - Changes the temperature setting of the zone to defaultTemp ( Default is 18 Celsius).  See defaultTemp optional setting
+`Off` - Turns the temperature setting of the zone to 0, and place on hold
+`Heat` - Changes the temperature setting of the zone to defaultTemp ( Default is 18 Celsius) and place on hold.  See defaultTemp optional setting
+`Auto` - Remove hold for zone
 
 # Settings
 

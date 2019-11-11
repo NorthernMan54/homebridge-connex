@@ -1,6 +1,6 @@
 {
   "name": "homebridge-connex",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "connex Thermostat Plugin Homebridge",
   "main": "index.js",
   "scripts": {
@@ -24,9 +24,7 @@
   },
   "dependencies": {
     "debug": ">2.6.9",
-    "fakegato-history": "^0.5.5",
-    "moment": "^2.20.1",
-    "request": "^2.34.0"
+    "request": ">2.34.0"
   },
   "author": "NorthernMan54",
   "license": "Apache-2.0",

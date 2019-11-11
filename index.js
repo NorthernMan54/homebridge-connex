@@ -2,20 +2,17 @@
 'use strict';
 
 var debug = require('debug')('connex');
-var Service, Characteristic, FakeGatoHistoryService, CustomCharacteristic;
+var Service, Characteristic;
 var os = require("os");
 var hostname = os.hostname();
 var Connex = require('./lib/connex.js').connex;
-const moment = require('moment');
 
 var myAccessories = [];
-var storage, thermostats;
+var thermostats;
 
 module.exports = function(homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
-  CustomCharacteristic = require('./lib/CustomCharacteristic.js')(homebridge);
-  FakeGatoHistoryService = require('fakegato-history')(homebridge);
 
   homebridge.registerPlatform("homebridge-connex", "connex", connexPlatform);
 };
@@ -26,14 +23,6 @@ function connexPlatform(log, config, api) {
   this.refresh = config['refresh'] || 60; // Update every minute
   this.defaultTemp = config['defaultTemp'] || 18; // default to 18
   this.log = log;
-  storage = config['storage'] || "fs";
-
-  /*
-    if (api) {
-      this.api = api;
-      this.api.on('didFinishLaunching', this.didFinishLaunching.bind(this));
-    }
-    */
 }
 
 connexPlatform.prototype = {
@@ -63,7 +52,7 @@ connexPlatform.prototype = {
 function pollDevices() {
   debug("pollDevices - thermo", thermostats);
   thermostats.poll(function(err, devices) {
-    debug("pollDevices - devices", devices);
+    // debug("pollDevices - devices", devices);
     if (!err) {
       for (var zone in devices.zones) {
         // thermostats.getDevices().zones.forEach(function(zone) {
@@ -110,12 +99,24 @@ function updateStatus(zone) {
       .updateValue(1);
   }
 
-  if (service.getCharacteristic(Characteristic.TargetTemperature).value === 0) {
+  // temp holdOn HoldOff
+  //   0    Off   Auto
+  //  >0   Heat   Auto
+
+  if (!zone.Hold) {
+    debug("%s TargetHeatingCoolingState = Auto", acc.name);
     service.getCharacteristic(Characteristic.TargetHeatingCoolingState)
-      .updateValue(0);
+      .updateValue(3);
   } else {
-    service.getCharacteristic(Characteristic.TargetHeatingCoolingState)
-      .updateValue(1);
+    if (service.getCharacteristic(Characteristic.TargetTemperature).value === 0) {
+      debug("%s TargetHeatingCoolingState = Off", acc.name);
+      service.getCharacteristic(Characteristic.TargetHeatingCoolingState)
+        .updateValue(0);
+    } else {
+      debug("%s TargetHeatingCoolingState = Heat", acc.name);
+      service.getCharacteristic(Characteristic.TargetHeatingCoolingState)
+        .updateValue(1);
+    }
   }
 }
 
@@ -132,22 +133,58 @@ function ConnexAccessory(that, name, zone) {
 
 ConnexAccessory.prototype = {
 
+  // Off = set target temperature to 0, and place on hold
+  // Heat = set target temperature to defaultTemp, and place on hold
+  // Auto = remove hold
+
   setTargetHeatingCooling: function(value, callback) {
     this.log("Setting system switch for", this.name, "to", value);
     switch (value) {
       case 0: // Off
-        ConnexAccessory.prototype.setTargetTemperature.call(this, 0, callback);
+        debug("%s setTargetHeatingCooling ==> ", this.name, 0);
+        thermostats.setTargetTemperature(this.zone, 0, function(err) {
+          if (!err) {
+            thermostats.setHold(this.zone, 1, function(err) {
+              pollDevices.call(this);
+              callback(err);
+            });
+          } else {
+            pollDevices.call(this);
+            callback(err);
+          }
+        }.bind(this));
         break;
       case 1: // Heat
-        debug("setTargetTemperature %s ==> ", this, myAccessories);
-        ConnexAccessory.prototype.setTargetTemperature.call(this, this.defaultTemp, callback);
+        debug("%s setTargetHeatingCooling ==> ", this.name, value);
+        // ConnexAccessory.prototype.setTargetTemperature.call(this, this.defaultTemp, callback);
+        thermostats.setTargetTemperature(this.zone, this.defaultTemp, function(err) {
+          if (!err) {
+            thermostats.setHold(this.zone, 1, function(err) {
+              pollDevices.call(this);
+              callback(err);
+            });
+          } else {
+            pollDevices.call(this);
+            callback(err);
+          }
+        }.bind(this));
+        break;
+      case 3: // Heat
+        debug("%s setTargetHeatingCooling ==> ", this.name, value);
+        thermostats.setHold(this.zone, 0, function(err) {
+          pollDevices.call(this);
+          callback(err);
+        });
         break;
     }
   },
 
   setTargetTemperature: function(value, callback) {
     this.log("Setting target temperature for", this.name, "to", value + "°");
-    thermostats.setTargetTemperature(this.zone, value, callback);
+    thermostats.setTargetTemperature(this.zone, value, function(err) {
+      pollDevices.call(this);
+      callback(err);
+    });
   },
 
   getServices: function() {
@@ -188,7 +225,7 @@ ConnexAccessory.prototype = {
     this.thermostatService
       .getCharacteristic(Characteristic.TargetHeatingCoolingState)
       .setProps({
-        validValues: [0, 1]
+        validValues: [0, 1, 3]
       });
 
     this.thermostatService
@@ -225,12 +262,17 @@ ConnexAccessory.prototype = {
         .updateValue(1);
     }
 
-    if (this.thermostatService.getCharacteristic(Characteristic.TargetTemperature).value === 0) {
+    if (!this.zone.Hold) {
       this.thermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState)
-        .updateValue(0);
+        .updateValue(3);
     } else {
-      this.thermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState)
-        .updateValue(1);
+      if (this.thermostatService.getCharacteristic(Characteristic.TargetTemperature).value === 0) {
+        this.thermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState)
+          .updateValue(0);
+      } else {
+        this.thermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState)
+          .updateValue(1);
+      }
     }
 
     return [informationService, this.thermostatService];
