@@ -79,9 +79,9 @@ function getAccessory(accessories, zoneId) {
 }
 
 function updateStatus(zone) {
-  debug("updateStatus %s", JSON.stringify(zone, null, 4));
+  debug("updateStatus %s ===>", zone.name, zone);
   var acc = getAccessory(myAccessories, zone.zone);
-  debug("updateStatus acc", acc.name);
+  // debug("updateStatus acc", acc.name);
   var service = acc.thermostatService;
 
   var targetTemperature = zone.Setpoint;
