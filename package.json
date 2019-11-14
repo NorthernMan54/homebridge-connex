@@ -24,7 +24,8 @@
   },
   "dependencies": {
     "debug": ">2.6.9",
-    "request": ">2.34.0"
+    "request": ">2.34.0",
+    "better-queue": ">=3.8.10"
   },
   "author": "NorthernMan54",
   "license": "Apache-2.0",
