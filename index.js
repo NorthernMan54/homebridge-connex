@@ -23,6 +23,7 @@ function connexPlatform(log, config, api) {
   this.refresh = config['refresh'] || 60; // Update every minute
   this.defaultTemp = config['defaultTemp'] || 18; // default to 18
   this.log = log;
+  this.api = api;
 }
 
 connexPlatform.prototype = {
