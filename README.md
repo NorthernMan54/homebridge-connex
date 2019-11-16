@@ -27,7 +27,7 @@ Homebridge plugin for the [Dimplex Connex WiFi thermostat](https://www.dimplex.c
 ## To do
 
 1 - Add support for multiple controllers on a single account
-2 - Set `not responding` for web site not responding
+2 - Handle failed login
 
 ## Done
 
@@ -40,6 +40,7 @@ Homebridge plugin for the [Dimplex Connex WiFi thermostat](https://www.dimplex.c
 7 - Handle website not available during startup
 8 - Investigate options for thermostat not responding - Issue #1
 9 - Does current temperature update ?
+10 - Set `not responding` for web site not responding
 
 # Using the plugin
 

@@ -55,7 +55,7 @@ function pollDevices() {
     if (err) {
       this.log("ERROR: pollDevices", err, devices);
     }
-    this.log("pollDevices - devices", devices);
+    // this.log("pollDevices - devices", devices);
     //  if (!err) {
     myAccessories.forEach(function(accessory) {
       // thermostats.getDevices().zones.forEach(function(zone) {
@@ -94,9 +94,9 @@ function getAccessoryByName(name) {
 }
 
 function updateStatus(accessory, devices) {
-  debug("updateStatus %s", accessory.displayName, devices);
+  // debug("updateStatus %s", accessory.displayName, devices);
   // var accessory = getAccessory(zone.zone);
-  debug("updateStatus acc", accessory);
+  // debug("updateStatus acc", accessory);
   var service = accessory.getService(Service.Thermostat);
 
   if (devices.connection_status === 'Online') {
@@ -167,6 +167,7 @@ function ConnexAccessory(that, name, zone) {
     this.log("Adding connex Device", name, zone);
     this.accessory = new Accessory(name, uuid, 10);
 
+    this.accessory.log = this.log;
     this.accessory.context.zone = zone;
     this.accessory.context.defaultTemp = that.defaultTemp;
 
@@ -208,7 +209,7 @@ function ConnexAccessory(that, name, zone) {
     this.accessory
       .getService(Service.Thermostat)
       .getCharacteristic(Characteristic.TargetHeatingCoolingState)
-      .on('set', setTargetHeatingCooling.bind(this));
+      .on('set', setTargetHeatingCooling.bind(this.accessory));
 
     this.accessory
       .getService(Service.Thermostat)
@@ -218,7 +219,7 @@ function ConnexAccessory(that, name, zone) {
         minValue: -0,
         maxValue: 30
       })
-      .on('set', setTargetTemperature.bind(this));
+      .on('set', setTargetTemperature.bind(this.accessory));
 
     this.accessory
       .getService(Service.Thermostat)
