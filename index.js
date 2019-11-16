@@ -52,22 +52,24 @@ connexPlatform.prototype.didFinishLaunching = function() {
 function pollDevices() {
   // debug("pollDevices - thermo", thermostats);
   thermostats.poll(function(err, devices) {
-    // this.log("pollDevices - devices", devices);
-    if (!err) {
-      for (var zone in devices.zones) {
-        // thermostats.getDevices().zones.forEach(function(zone) {
-        // debug("forZone", zone);
-        if (zone) {
-          updateStatus(thermostats.getDevices().zones[zone]);
-        }
-      }
-    } else {
-      this.log("ERROR: pollDevices", err);
+    if (err) {
+      this.log("ERROR: pollDevices", err, devices);
     }
+    this.log("pollDevices - devices", devices);
+    //  if (!err) {
+    myAccessories.forEach(function(accessory) {
+      // thermostats.getDevices().zones.forEach(function(zone) {
+      // debug("forZone", zone);
+      updateStatus.call(this, accessory, devices);
+    }.bind(this));
+    //  } else {
+    //    this.log("ERROR: pollDevices", err, devices);
+    //  }
   }.bind(this));
 }
 
-function getAccessory(accessories, zoneId) {
+/*
+function getAccessory(zoneId) {
   var value;
   // debug("myAccessories", myAccessories);
   myAccessories.forEach(function(accessory) {
@@ -78,6 +80,7 @@ function getAccessory(accessories, zoneId) {
   });
   return value;
 }
+*/
 
 function getAccessoryByName(name) {
   var value;
@@ -90,56 +93,63 @@ function getAccessoryByName(name) {
   return value;
 }
 
-function updateStatus(zone) {
-  // debug("updateStatus %s", zone.name);
-  var acc = getAccessory(myAccessories, zone.zone);
-  // debug("updateStatus acc", acc);
-  var service = acc.getService(Service.Thermostat);
+function updateStatus(accessory, devices) {
+  debug("updateStatus %s", accessory.displayName, devices);
+  // var accessory = getAccessory(zone.zone);
+  debug("updateStatus acc", accessory);
+  var service = accessory.getService(Service.Thermostat);
 
-  var targetTemperature = zone.Setpoint;
-  if (service.getCharacteristic(Characteristic.TargetTemperature).value !== targetTemperature / 10) {
-    debug("Updating TargetTemperature %s ==> %s", zone.name, targetTemperature / 10);
-  }
-  service.getCharacteristic(Characteristic.TargetTemperature)
-    .updateValue(Number(targetTemperature / 10));
+  if (devices.connection_status === 'Online') {
+    var zone = devices.zones[accessory.context.zone.zone];
+    var targetTemperature = zone.Setpoint;
+    if (service.getCharacteristic(Characteristic.TargetTemperature).value !== targetTemperature / 10) {
+      debug("Updating TargetTemperature %s ==> %s", accessory.displayName, targetTemperature / 10);
+    }
+    service.getCharacteristic(Characteristic.TargetTemperature)
+      .updateValue(Number(targetTemperature / 10));
 
-  if (service.getCharacteristic(Characteristic.CurrentTemperature).value !== zone.CurrTemp / 10) {
-    debug("Updating CurrentTemperature %s ==> %s", zone.name, zone.CurrTemp / 10);
-  }
-  service.getCharacteristic(Characteristic.CurrentTemperature)
-    .updateValue(Number(zone.CurrTemp / 10));
+    if (service.getCharacteristic(Characteristic.CurrentTemperature).value !== zone.CurrTemp / 10) {
+      debug("Updating CurrentTemperature %s ==> %s", accessory.displayName, zone.CurrTemp / 10);
+    }
+    service.getCharacteristic(Characteristic.CurrentTemperature)
+      .updateValue(Number(zone.CurrTemp / 10));
 
-  if (service.getCharacteristic(Characteristic.CurrentTemperature).value > service.getCharacteristic(Characteristic.TargetTemperature).value) {
-    service.getCharacteristic(Characteristic.CurrentHeatingCoolingState)
-      .updateValue(0);
-  } else {
-    service.getCharacteristic(Characteristic.CurrentHeatingCoolingState)
-      .updateValue(1);
-  }
-
-  // temp holdOn HoldOff
-  //   0    Off   Auto
-  //  >0   Heat   Auto
-
-  var TargetHeatingCoolingState = service.getCharacteristic(Characteristic.TargetHeatingCoolingState).value;
-  var newMode;
-  if (!zone.Hold) {
-    newMode = "Auto";
-    service.getCharacteristic(Characteristic.TargetHeatingCoolingState)
-      .updateValue(3);
-  } else {
-    if (service.getCharacteristic(Characteristic.TargetTemperature).value === 0) {
-      newMode = "Off";
-      service.getCharacteristic(Characteristic.TargetHeatingCoolingState)
+    if (service.getCharacteristic(Characteristic.CurrentTemperature).value > service.getCharacteristic(Characteristic.TargetTemperature).value) {
+      service.getCharacteristic(Characteristic.CurrentHeatingCoolingState)
         .updateValue(0);
     } else {
-      newMode = "Heat";
-      service.getCharacteristic(Characteristic.TargetHeatingCoolingState)
+      service.getCharacteristic(Characteristic.CurrentHeatingCoolingState)
         .updateValue(1);
     }
-  }
-  if (service.getCharacteristic(Characteristic.TargetHeatingCoolingState).value !== TargetHeatingCoolingState) {
-    debug("Updating MODE %s ==> %s", zone.name, newMode);
+
+    // temp holdOn HoldOff
+    //   0    Off   Auto
+    //  >0   Heat   Auto
+
+    var TargetHeatingCoolingState = service.getCharacteristic(Characteristic.TargetHeatingCoolingState).value;
+    var newMode;
+    if (!zone.Hold) {
+      newMode = "Auto";
+      service.getCharacteristic(Characteristic.TargetHeatingCoolingState)
+        .updateValue(3);
+    } else {
+      if (service.getCharacteristic(Characteristic.TargetTemperature).value === 0) {
+        newMode = "Off";
+        service.getCharacteristic(Characteristic.TargetHeatingCoolingState)
+          .updateValue(0);
+      } else {
+        newMode = "Heat";
+        service.getCharacteristic(Characteristic.TargetHeatingCoolingState)
+          .updateValue(1);
+      }
+    }
+    if (service.getCharacteristic(Characteristic.TargetHeatingCoolingState).value !== TargetHeatingCoolingState) {
+      debug("Updating MODE %s ==> %s", accessory.displayName, newMode);
+    }
+  } else {
+    this.log("ERROR: %s Thermostat ==> %s", accessory.displayName, devices.connection_status);
+    service.getCharacteristic(Characteristic.TargetTemperature)
+      .updateValue(new Error("Thermostat offline"));
   }
 }
 
