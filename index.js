@@ -32,12 +32,8 @@ function connexPlatform(log, config, api) {
   }
 }
 
-
-
 connexPlatform.prototype.didFinishLaunching = function() {
   this.log("didFinishLaunching");
-
-  // debug("this.api", JSON.stringify(this.api, null, 4));
 
   thermostats = new Connex(this, function(err, device) {
     if (!err) {
@@ -73,9 +69,10 @@ function pollDevices() {
 
 function getAccessory(accessories, zoneId) {
   var value;
+  // debug("myAccessories", myAccessories);
   myAccessories.forEach(function(accessory) {
-    // debug("getAccessory zone", JSON.stringify(accessory.accessory.context.zone, null, 4), zoneId);
-    if (accessory.accessory.context.zone.zone === zoneId) {
+    // debug("getAccessory zone", JSON.stringify(accessory, null, 4), zoneId);
+    if (accessory.context.zone.zone === zoneId) {
       value = accessory;
     }
   });
@@ -86,7 +83,7 @@ function getAccessoryByName(name) {
   var value;
   myAccessories.forEach(function(accessory) {
     // debug("getAccessoryByName zone", accessory.name, name);
-    if (accessory.name === name) {
+    if (accessory.displayName === name) {
       value = accessory;
     }
   });
@@ -97,7 +94,7 @@ function updateStatus(zone) {
   // debug("updateStatus %s", zone.name);
   var acc = getAccessory(myAccessories, zone.zone);
   // debug("updateStatus acc", acc);
-  var service = acc.accessory.getService(Service.Thermostat);
+  var service = acc.getService(Service.Thermostat);
 
   var targetTemperature = zone.Setpoint;
   if (service.getCharacteristic(Characteristic.TargetTemperature).value !== targetTemperature / 10) {
@@ -328,8 +325,5 @@ connexPlatform.prototype.configureAccessory = function(accessory) {
       .on('set', setTargetTemperature.bind(accessory));
   }
 
-  myAccessories.push({
-    name: accessory.displayName,
-    accessory: accessory
-  });
+  myAccessories.push(accessory);
 };
