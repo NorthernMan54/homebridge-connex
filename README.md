@@ -27,7 +27,8 @@ Homebridge plugin for the [Dimplex Connex WiFi thermostat](https://www.dimplex.c
 ## To do
 
 1 - Add support for multiple controllers on a single account
-2 - Handle website not available during startup
+2 - Set `not responding` for web site not responding
+3 - Investigate options for thermostat not responding
 
 ## Done
 
@@ -37,6 +38,7 @@ Homebridge plugin for the [Dimplex Connex WiFi thermostat](https://www.dimplex.c
 4 - Have 'Auto' release hold on a zone, and resume schedule
 5 - Have temperature setting changes trigger a Poll
 6 - Queue requests to dimplex connex to prevent service API overload
+7 - Handle website not available during startup
 
 # Using the plugin
 
