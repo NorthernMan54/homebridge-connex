@@ -27,6 +27,7 @@ Homebridge plugin for the [Dimplex Connex WiFi thermostat](https://www.dimplex.c
 ## To do
 
 1 - Add support for multiple controllers on a single account
+2 - Handle website not available during startup
 
 ## Done
 
