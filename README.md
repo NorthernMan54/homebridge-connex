@@ -27,6 +27,7 @@ Homebridge plugin for the [Dimplex Connex WiFi thermostat](https://www.dimplex.c
 ## To do
 
 1 - Add support for multiple controllers on a single account
+2 - Local API ( Currently not supported by WiFi controller, needs further investigation )
 
 ## Done
 
@@ -51,7 +52,7 @@ Setting a temperature in 'Heat' mode, set's the temperature with a permanent hol
 
 ## Current Temperature
 
-The current temperature you see in the Home App is what is reported from the WiFi Controller and not the Baseboard itself and will be the same for each Zone.  ie the temperature of the WiFi controller 
+The current temperature you see in the Home App is what is reported from the WiFi Controller and not the Baseboard itself and will be the same for each Zone.  ie the temperature of the WiFi controller
 
 ## Mode Setting
 
