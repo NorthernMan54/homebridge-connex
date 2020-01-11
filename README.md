@@ -12,6 +12,7 @@ Homebridge plugin for the [Dimplex Connex WiFi thermostat](https://www.dimplex.c
       * [Done](#done)
    * [Using the plugin](#using-the-plugin)
       * [Temperature Control](#temperature-control)
+      * [Current Temperature](#current-temperature)
       * [Mode Setting](#mode-setting)
    * [Settings](#settings)
       * [Required settings](#required-settings)
