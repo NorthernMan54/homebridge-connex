@@ -1,0 +1,53 @@
+{
+    "pluginAlias": "Connex",
+    "pluginType": "platform",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "title": "Name",
+                "type": "string",
+                "required": true,
+                "default": "connex",
+                "description": "The name that will appear in your homebridge log."
+            },
+            "platform": {
+                "title": "Platform",
+                "type": "string",
+                "default": "connex",
+                "required": true,
+                "description": "This must be connex."
+            },
+            "username": {
+                "title": "E-Mail",
+                "type": "string",
+                "placeholder": "YOUR-CONNEX-EMAIL",
+                "required": true,
+                "description": "Your Connex Dimplex email address / login."
+            },
+            "password": {
+                "title": "Password",
+                "type": "string",
+                "placeholder": "YOUR-CONNEX-PASSWORD",
+                "required": true,
+                "description": "Your Connex Dimplex password."
+            },
+            "defaultTemp": {
+                "title": "Default Temp",
+                "type": "number",
+                "required": false,
+                "placeholder": 18,
+                "minLength": 1,
+                "description": "Default temperature in Celsius to set a zone to when turning on ( Defaults to 18 Celsius)."
+            },
+            "refresh": {
+                "title": "Refresh",
+                "type": "string",
+                "required": false,
+                "placeholder": 60,
+                "minLength": 1,
+                "description": "Data polling interval in seconds, defaults to 60 seconds."
+            }
+        }
+    }
+}
