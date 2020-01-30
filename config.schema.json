@@ -11,13 +11,6 @@
                 "default": "connex",
                 "description": "The name that will appear in your homebridge log."
             },
-            "platform": {
-                "title": "Platform",
-                "type": "string",
-                "default": "connex",
-                "required": true,
-                "description": "This must be connex."
-            },
             "username": {
                 "title": "E-Mail",
                 "type": "string",
